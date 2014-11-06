@@ -191,10 +191,8 @@ public class ExpenseTrackerDao {
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
-        System.out.println("Adj update with key : "+adjustment.getKeyEncoded());
 
         Key key = KeyFactory.stringToKey(adjustment.getKeyEncoded());
-        System.out.println("Pre update key adj :"+key);
 
         //Entity entity = new Entity("Adjustment", key);
         Entity entity = new Entity(key);
@@ -208,7 +206,6 @@ public class ExpenseTrackerDao {
         entity.setProperty("deductionExpenseKeyString", adjustment.getDeductionExpenseKeyString());
 
         Key k = datastore.put(entity);
-        System.out.println("Post update key adj :"+k);
         adjustment.setKeyEncoded(KeyFactory.keyToString(k));
         return KeyFactory.keyToString(k);
 

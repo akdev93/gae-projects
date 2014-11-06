@@ -28,7 +28,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.PreparedQuery;
 
-@Path("/hello")
+@Path("/et")
 public class HelloWorldResource {
 
     @GET
@@ -50,7 +50,7 @@ public class HelloWorldResource {
     }
 
     @POST
-    @Path("/expense/openPeriod")
+    @Path("/openPeriod")
     @Consumes(MediaType.TEXT_PLAIN)
     public Response openPeriod(String name) throws Exception {
         ExpenseTrackerDao dao = new ExpenseTrackerDao();
@@ -73,7 +73,7 @@ public class HelloWorldResource {
     }
 
     @GET
-    @Path("/expense/report/{period}")
+    @Path("/report/{period}")
 //    public PeriodicReport getPeriodicReport(@PathParam("period")String period) {
     public Response getPeriodicReport(@PathParam("period")String period) {
         ExpenseTrackerDao dao = new ExpenseTrackerDao();
@@ -107,7 +107,7 @@ public class HelloWorldResource {
     }
 
     @GET
-    @Path("/expense/query/{period}/{category}")
+    @Path("/query/{period}/{category}")
     public Response queryExpenseRecords(@PathParam("period") String period, @PathParam("category") String category) {
 
         System.out.println("Period  : "+period);
@@ -152,10 +152,18 @@ public class HelloWorldResource {
     public Response postAdjustment(@PathParam("keyString") String keyString, Adjustment adjustment) throws Exception {
         ExpenseTrackerDao dao = new ExpenseTrackerDao();
         Expense parentExpense = dao.getExpenseRecord(keyString);
+        if(!isValidPeriod(adjustment.getMoveToPeriod())) {
+            return Response.status(400).entity("["+adjustment.getMoveToPeriod()+"] is not valid").build();
+        }
         if(parentExpense != null) {
             float adjCost = adjustment.getAmount();
             adjustment.setParentExpenseKeyString(keyString);
             //validate adjCost <= parentExpense.getCost();
+            if(parentExpense.getCost() < adjustment.getAmount()) {
+                return Response.status(400).entity("invalid amount "+
+                        adjustment.getAmount()+". Parent expense amount is lesser "+parentExpense.getCost()).build();
+
+            }
             String adjKey  = dao.saveAdjustment(parentExpense,adjustment);
 
             System.out.println("Adj key to be set in exp :"+adjKey);
@@ -275,5 +283,11 @@ public class HelloWorldResource {
 
 
         return Response.status(200).entity("ok").build();
+    }
+    
+    private boolean isValidPeriod(String periodName) {
+        ExpenseTrackerDao dao = new ExpenseTrackerDao();
+        List<Category> list = dao.getCategoriesForPeriod(periodName);
+        return (list.size()!=0);
     }
 }

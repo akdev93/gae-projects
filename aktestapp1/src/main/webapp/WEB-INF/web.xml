@@ -31,7 +31,7 @@
     </servlet-mapping>
     <servlet-mapping>
           <servlet-name>JerseyServlet</servlet-name>
-          <url-pattern>/aktestapp1/*</url-pattern>
+          <url-pattern>/services/*</url-pattern>
     </servlet-mapping>
 
 </web-app>
